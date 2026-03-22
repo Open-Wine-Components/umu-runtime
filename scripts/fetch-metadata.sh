@@ -64,48 +64,56 @@ popd >/dev/null
 upstream_build_id="$(tr -d '\n' < "${UPSTREAM_DIR}/${buildid_file}")"
 resolved_version="$(tr -d '\n' < "${UPSTREAM_DIR}/VERSION.txt")"
 resolved_uuid="$(tr -d '\n' < "${UPSTREAM_DIR}/UUID.txt")"
+container_platform="$(runtime_platform "${arch}")"
+arch_tag="$(sanitize_arch "${arch}")"
 
-cat > "${BUILD_DIR}/build.env" <<ENV
-ROOT_DIR=${ROOT_DIR}
-BUILD_DIR=${BUILD_DIR}
-DIST_DIR=${DIST_DIR}
-UPSTREAM_DIR=${UPSTREAM_DIR}
-SOURCE_CACHE_DIR=${SOURCE_CACHE_DIR}
-SOURCE_TREE_DIR=${SOURCE_TREE_DIR}
-PATCHED_REPO_DIR=${PATCHED_REPO_DIR}
-OVERLAY_DIR=${OVERLAY_DIR}
-PATCHES_DIR=${PATCHES_DIR}
-HOOKS_DIR=${HOOKS_DIR}
-DOCKER_DIR=${DOCKER_DIR}
-SNIPER_SNAPSHOT=${snapshot}
-SNIPER_SUITE=${suite}
-SNIPER_VARIANT=${variant}
-SNIPER_ARCH=${arch}
-SNIPER_BASE_URL=${SNIPER_BASE_URL}
-SNIPER_APT_URL=${SNIPER_APT_URL}
-SNIPER_APT_DIST=${SNIPER_APT_DIST}
-SNIPER_APT_COMPONENTS=${SNIPER_APT_COMPONENTS}
-DEBIAN_MIRROR=${DEBIAN_MIRROR}
-DEBIAN_SECURITY_MIRROR=${DEBIAN_SECURITY_MIRROR}
-DEBIAN_RELEASE=${DEBIAN_RELEASE}
-SNIPER_ARTIFACT_PREFIX=${artifact_prefix}
-UPSTREAM_BASE_URL=${base_url}
-UPSTREAM_BUILDID_FILE=${buildid_file}
-UPSTREAM_OS_RELEASE_FILE=${os_release_file}
-UPSTREAM_MANIFEST_FILE=${manifest_file}
-UPSTREAM_BUILT_USING_FILE=${built_using_file}
-UPSTREAM_SOURCE_REQUIRED_FILE=${source_required_file}
-UPSTREAM_SYSROOT_DOCKERFILE=${sysroot_dockerfile}
-UPSTREAM_SOURCES_INDEX=${sources_index}
-UPSTREAM_BUILD_ID=${upstream_build_id}
-UPSTREAM_VERSION=${resolved_version}
-UPSTREAM_UUID=${resolved_uuid}
-UMU_RUNTIME_PREFIX=${UMU_RUNTIME_PREFIX}
-UMU_IMAGE_NAME=${UMU_IMAGE_NAME}
-DEFAULT_CMD=${DEFAULT_CMD}
-ENABLE_LEGACY_OVERLAY=${ENABLE_LEGACY_OVERLAY}
-CONTAINER_PLATFORM=$(runtime_platform "${arch}")
-ARCH_TAG=$(sanitize_arch "${arch}")
-ENV
+write_env() {
+    local key="$1"
+    local value="$2"
+    printf '%s=%q\n' "$key" "$value"
+}
+
+{
+    write_env ROOT_DIR "${ROOT_DIR}"
+    write_env BUILD_DIR "${BUILD_DIR}"
+    write_env DIST_DIR "${DIST_DIR}"
+    write_env UPSTREAM_DIR "${UPSTREAM_DIR}"
+    write_env SOURCE_CACHE_DIR "${SOURCE_CACHE_DIR}"
+    write_env SOURCE_TREE_DIR "${SOURCE_TREE_DIR}"
+    write_env PATCHED_REPO_DIR "${PATCHED_REPO_DIR}"
+    write_env OVERLAY_DIR "${OVERLAY_DIR}"
+    write_env PATCHES_DIR "${PATCHES_DIR}"
+    write_env HOOKS_DIR "${HOOKS_DIR}"
+    write_env DOCKER_DIR "${DOCKER_DIR}"
+    write_env SNIPER_SNAPSHOT "${snapshot}"
+    write_env SNIPER_SUITE "${suite}"
+    write_env SNIPER_VARIANT "${variant}"
+    write_env SNIPER_ARCH "${arch}"
+    write_env SNIPER_BASE_URL "${SNIPER_BASE_URL}"
+    write_env SNIPER_APT_URL "${SNIPER_APT_URL}"
+    write_env SNIPER_APT_DIST "${SNIPER_APT_DIST}"
+    write_env SNIPER_APT_COMPONENTS "${SNIPER_APT_COMPONENTS}"
+    write_env DEBIAN_MIRROR "${DEBIAN_MIRROR}"
+    write_env DEBIAN_SECURITY_MIRROR "${DEBIAN_SECURITY_MIRROR}"
+    write_env DEBIAN_RELEASE "${DEBIAN_RELEASE}"
+    write_env SNIPER_ARTIFACT_PREFIX "${artifact_prefix}"
+    write_env UPSTREAM_BASE_URL "${base_url}"
+    write_env UPSTREAM_BUILDID_FILE "${buildid_file}"
+    write_env UPSTREAM_OS_RELEASE_FILE "${os_release_file}"
+    write_env UPSTREAM_MANIFEST_FILE "${manifest_file}"
+    write_env UPSTREAM_BUILT_USING_FILE "${built_using_file}"
+    write_env UPSTREAM_SOURCE_REQUIRED_FILE "${source_required_file}"
+    write_env UPSTREAM_SYSROOT_DOCKERFILE "${sysroot_dockerfile}"
+    write_env UPSTREAM_SOURCES_INDEX "${sources_index}"
+    write_env UPSTREAM_BUILD_ID "${upstream_build_id}"
+    write_env UPSTREAM_VERSION "${resolved_version}"
+    write_env UPSTREAM_UUID "${resolved_uuid}"
+    write_env UMU_RUNTIME_PREFIX "${UMU_RUNTIME_PREFIX}"
+    write_env UMU_IMAGE_NAME "${UMU_IMAGE_NAME}"
+    write_env DEFAULT_CMD "${DEFAULT_CMD}"
+    write_env ENABLE_LEGACY_OVERLAY "${ENABLE_LEGACY_OVERLAY}"
+    write_env CONTAINER_PLATFORM "${container_platform}"
+    write_env ARCH_TAG "${arch_tag}"
+} > "${BUILD_DIR}/build.env"
 
 log "Resolved upstream build ID: ${upstream_build_id}"

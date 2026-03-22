@@ -26,17 +26,21 @@ def main() -> int:
             install_specs.append(spec)
             seen.add(spec)
 
+    steamrt_keyring_dest = '/usr/share/keyrings/steamrt-archive-keyring.gpg'
+    steamrt_keyring_src = os.environ.get('STEAMRT_KEYRING_SRC', 'keys/steamrt-archive-keyring.gpg')
+
     lines = [
         'FROM debian:bullseye-slim',
         'ENV DEBIAN_FRONTEND=noninteractive',
         'RUN dpkg --add-architecture i386 || true',
-        'RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates gnupg dirmngr && rm -rf /var/lib/apt/lists/*',
+        f'COPY {steamrt_keyring_src} {steamrt_keyring_dest}',
+        'RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*',
     ]
 
     sources_lines = [
         f'deb {os.environ["DEBIAN_MIRROR"]} {os.environ["DEBIAN_RELEASE"]} main contrib non-free',
         f'deb {os.environ["DEBIAN_SECURITY_MIRROR"]} {os.environ["DEBIAN_RELEASE"]}-security main contrib non-free',
-        f'deb {os.environ["SNIPER_APT_URL"]} {os.environ["SNIPER_APT_DIST"]} {os.environ["SNIPER_APT_COMPONENTS"]}',
+        f'deb [signed-by={steamrt_keyring_dest}] {os.environ["SNIPER_APT_URL"]} {os.environ["SNIPER_APT_DIST"]} {os.environ["SNIPER_APT_COMPONENTS"]}',
     ]
     printf_args = ' '.join(f'"{line}"' for line in sources_lines)
     lines.append(f'RUN printf "%s\\n" {printf_args} > /etc/apt/sources.list')
@@ -50,11 +54,12 @@ def main() -> int:
     lines.append('RUN apt-get update')
     if install_specs:
         joined = ' \\\n    '.join(install_specs)
-        lines.append(
+        install_cmd = (
             'RUN apt-get install -y --no-install-recommends \\\n    '
             + joined
-            + '\n && apt-get clean && rm -rf /var/lib/apt/lists/*'
+            + ' \\\n && apt-get clean && rm -rf /var/lib/apt/lists/*'
         )
+        lines.append(install_cmd)
 
     output.write_text('\n'.join(lines) + '\n', encoding='utf-8')
     return 0

@@ -19,7 +19,7 @@ Valve says the official container runtimes and SDKs are built with `flatdeb-stea
 - A source-visible pipeline.
 - A patch point before package rebuilds.
 - A package-assembled base image rather than a downloaded runtime image.
-- Your previous `umu-sdk` style of customization preserved as an optional final overlay stage.
+- Previous `umu-sdk` customization preserved as an optional final overlay stage.
 
 ## Important scope note
 
@@ -37,23 +37,6 @@ This is the **closest public equivalent** to Valve's pipeline that can be run in
 - `docker/overlay.Dockerfile` — optional old-style “take base image and layer our changes on top” stage.
 - `overlays/rootfs/` — optional file overlay copied into the exported rootfs before the final image is built.
 - `scripts/hooks/post-extract.sh` — optional shell customization hook after rootfs export.
-
-## How the old `umu-sdk` model fits in
-
-Your old flow was:
-
-1. pull a prebuilt image,
-2. apply changes,
-3. publish a new image.
-
-This repo keeps the same *shape* for the last step, but changes the upstream stage:
-
-1. build the UMU base image from SteamRT package metadata and sources,
-2. tag that as the local base image,
-3. run `docker/overlay.Dockerfile` on top of it,
-4. export artifacts.
-
-So the “apply changes on top of an image” part survives, but the image you are extending is one you built locally from public SteamRT inputs.
 
 ## Releasing
 
